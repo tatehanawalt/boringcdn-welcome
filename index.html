@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoringCDN Guide - Getting Started</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BoringCDN Guide</h1>
+            <p class="subtitle">Simple, fast content delivery for static sites</p>
+        </div>
+
+        <div class="content-section">
+            <h2>📦 What is BoringCDN?</h2>
+            <p>BoringCDN is a simple content delivery network for hosting static websites and files. Upload your HTML, CSS, JavaScript, and assets - we'll handle the rest.</p>
+            <p><strong>Upload files using an auth token, manage content from the UI.</strong></p>
+        </div>
+
+        <div class="content-section">
+            <h2>🚀 Quick Start</h2>
+            <ol>
+                <li><strong>Create Content:</strong> Go to your <a href="https://boringcdn.com/dashboard">dashboard</a> and create a new content item</li>
+                <li><strong>Create API Token:</strong> Generate a token in your settings page for uploads</li>
+                <li><strong>Upload Files:</strong> Check out the following snippets to see examples using the auth token to upload content</li>
+                <li><strong>Go Live:</strong> Your site is instantly available at your unique URL</li>
+            </ol>
+        </div>
+
+        <div class="content-section">
+            <h2>🔑 Creating an API Token</h2>
+            <p>API tokens allow you to upload files programmatically. Create one in your settings page:</p>
+            <ol>
+                <li>Go to <a href="https://boringcdn.com/settings">https://boringcdn.com/settings</a></li>
+                <li>Find the "API Tokens" section</li>
+                <li>Click "Create New Token"</li>
+                <li>Give your token a name (e.g., "CI/CD Deploy")</li>
+                <li>Copy and save the token securely - you won't see it again!</li>
+            </ol>
+        </div>
+
+
+        <div class="content-section">
+            <h2>📚 Example Workflows</h2>
+
+            <h3>Deploy This Guide (Individual Files Method)</h3>
+            <p>Try deploying this exact guide by uploading files individually:</p>
+            <div class="code-block">
+                <pre><code># Upload index.html
+curl -X POST https://boringcdn.com/api/v1/upload \
+  -H "Authorization: Bearer $BORINGCDN_TOKEN" \
+  -F "file=@index.html" \
+  -F "content_id=$BORINGCDN_CONTENT_ID" \
+  -F "path=index.html"
+
+# Upload style.css
+curl -X POST https://boringcdn.com/api/v1/upload \
+  -H "Authorization: Bearer $BORINGCDN_TOKEN" \
+  -F "file=@style.css" \
+  -F "content_id=$BORINGCDN_CONTENT_ID" \
+  -F "path=style.css"</code></pre>
+            </div>
+
+            <h3>Deploy This Guide (Tar Archive Method)</h3>
+            <p>Try deploying this exact guide using a tar.gz archive:</p>
+            <div class="code-block">
+                <pre><code># Create a build directory
+mkdir -p dist
+
+# Copy the guide files
+cp index.html style.css dist/
+
+# Create tar archive
+tar -czf dist.tar.gz -C ./dist .
+
+# Upload to BoringCDN
+curl -X POST https://boringcdn.com/api/v1/upload \
+  -H "Authorization: Bearer $BORINGCDN_TOKEN" \
+  -F "file=@dist.tar.gz" \
+  -F "content_id=$BORINGCDN_CONTENT_ID"
+
+# Clean up
+rm -rf dist dist.tar.gz</code></pre>
+            </div>
+
+            <h3>Deploy a React App</h3>
+            <div class="code-block">
+                <pre><code># Build your app
+npm run build
+
+# Create archive
+tar -czf build.tar.gz -C ./build .
+
+# Upload to BoringCDN
+curl -X POST https://boringcdn.com/api/v1/upload \
+  -H "Authorization: Bearer $BORINGCDN_TOKEN" \
+  -F "file=@build.tar.gz" \
+  -F "content_id=my-react-app"
+
+# Clean up
+rm build.tar.gz</code></pre>
+            </div>
+
+            <h3>Deploy a Vue App</h3>
+            <div class="code-block">
+                <pre><code># Build your app
+npm run build
+
+# Create archive
+tar -czf dist.tar.gz -C ./dist .
+
+# Upload to BoringCDN
+curl -X POST https://boringcdn.com/api/v1/upload \
+  -H "Authorization: Bearer $BORINGCDN_TOKEN" \
+  -F "file=@dist.tar.gz" \
+  -F "content_id=my-vue-app"
+
+# Clean up
+rm dist.tar.gz</code></pre>
+            </div>
+
+            <h3>Deploy Static HTML</h3>
+            <div class="code-block">
+                <pre><code># Create archive
+tar -czf site.tar.gz -C ./public .
+
+# Upload to BoringCDN
+curl -X POST https://boringcdn.com/api/v1/upload \
+  -H "Authorization: Bearer $BORINGCDN_TOKEN" \
+  -F "file=@site.tar.gz" \
+  -F "content_id=my-website"
+
+# Clean up
+rm site.tar.gz</code></pre>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2>⚙️ GitHub Actions Integration</h2>
+            <p>Automatically deploy on every push to your repository:</p>
+
+            <div class="code-block">
+                <h4>.github/workflows/deploy.yml:</h4>
+                <pre><code>name: Deploy to BoringCDN
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: npm run build  # or your build command
+
+      - name: Create archive
+        run: tar -czf dist.tar.gz -C ./dist .
+
+      - name: Upload to BoringCDN
+        run: |
+          curl -X POST https://boringcdn.com/api/v1/upload \
+            -H "Authorization: Bearer ${{ secrets.BORINGCDN_TOKEN }}" \
+            -F "file=@dist.tar.gz" \
+            -F "content_id=your-content-id" \
+            --fail-with-body
+
+      - name: Clean up
+        run: rm dist.tar.gz</code></pre>
+            </div>
+
+            <p><strong>Note:</strong> Add <code>BORINGCDN_TOKEN</code> to your repository secrets in GitHub Settings → Secrets and variables → Actions</p>
+        </div>
+
+        <div class="footer">
+            <p>Ready to deploy? Visit your <a href="https://boringcdn.com/dashboard"><strong>Dashboard</strong></a> to create content and generate API tokens!</p>
+            <p><a href="https://github.com/tatehanawalt/boringcdn-welcome">View on GitHub</a> | <a href="https://boringcdn.com/docs">Documentation</a></p>
+        </div>
+    </div>
+</body>
+</html>

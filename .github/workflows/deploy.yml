@@ -1,0 +1,38 @@
+name: Deploy to BoringCDN
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create dist directory
+        run: mkdir -p dist
+
+      - name: Copy files to dist
+        run: |
+          # Copy all HTML, CSS, and JS files from root directory
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" \) -exec cp {} dist/ \;
+
+      - name: Create archive
+        run: tar -czf dist.tar.gz -C ./dist .
+
+      - name: Upload to BoringCDN
+        run: |
+          curl -X POST https://boringcdn.com/api/v1/upload \
+            -H "Authorization: Bearer ${{ secrets.BORINGCDN_TOKEN }}" \
+            -F "frontend=boringcdn-welcome" \
+            -F "file=@dist.tar.gz" \
+            --fail-with-body
+        env:
+          BORINGCDN_TOKEN: ${{ secrets.BORINGCDN_TOKEN }}
+
+      - name: Clean up
+        run: rm dist.tar.gz
